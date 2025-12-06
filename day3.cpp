@@ -1,7 +1,9 @@
-#include <cstdint>
-#include <bits/stdc++.h>
+#include <cmath>
+#include <fstream>
 #include <iostream>
+#include <numeric>
 #include <string>
+#include <vector>
 
 class Day3 {
     private:
