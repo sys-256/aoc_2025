@@ -1,43 +1,39 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
-#include <set>
+#include <map>
 #include <string>
 #include <vector>
 
 class Day7 {
 	private:
-	std::vector<std::pair<long, long>> beam_positions;
+	std::map<long, long> beam_positions; // column, row
 	std::vector<std::vector<bool>> splitters;
 	long total_splits;
 
 	bool iterate() {
-		std::vector<std::pair<long, long>> new_beams;
-		for (long i = 0; i < beam_positions.size(); i++) {
-			if (beam_positions[i].first < 0) continue; // Disabled beams
-			
-			beam_positions[i].first += 1;
-			if (beam_positions[i].first == splitters.size()) {
+		std::vector<std::pair<long, long>> to_add;
+		std::vector<long> to_erase;
+		for (auto& pair : beam_positions) {
+			pair.second += 1;
+			if (pair.second == splitters.size()) {
 				return false; // Stop the program
 			}
-			if (splitters[beam_positions[i].first][beam_positions[i].second]) {
+			if (splitters[pair.second][pair.first]) {
 				// If this beam is now on a splitter
-				new_beams.push_back({beam_positions[i].first, beam_positions[i].second - 1});
-				new_beams.push_back({beam_positions[i].first, beam_positions[i].second + 1});
-				beam_positions[i] = {-1, -1};
+				to_add.push_back(std::make_pair(pair.first - 1, pair.second));
+				to_add.push_back(std::make_pair(pair.first + 1, pair.second));
+				to_erase.push_back(pair.first);
 				total_splits += 1;
 			}
 		}
-		for (auto beam : new_beams) {
-			insert_beam(beam);
+		for (auto pair : to_add) {
+			beam_positions.insert(pair);
+		}
+		for (auto key : to_erase) {
+			beam_positions.erase(key);
 		}
 		return true;
-	}
-
-	void insert_beam(std::pair<long, long> beam) {
-		if (std::count(beam_positions.begin(), beam_positions.end(), beam) <= 0) {
-			beam_positions.push_back(beam);
-		}
 	}
 
 	public:
@@ -52,7 +48,7 @@ class Day7 {
 				case 'S':
 					// This assumes there's only 1 S which is
 					// on the first row
-					beam_positions = {{0, i}};
+					beam_positions.insert(std::make_pair(i, 0));
 				case '.':
 					splitter_row.push_back(false);
 					break;
@@ -65,9 +61,7 @@ class Day7 {
 	}
 
 	long get_splits() {
-		while (iterate()) {
-			std::cout << "";
-		}
+		while (iterate()) {}
 		return total_splits;
 	}
 };
