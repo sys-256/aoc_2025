@@ -5,6 +5,38 @@
 #include <string>
 #include <vector>
 
+std::map<std::pair<long, long>, long> table;
+
+class Beam {
+	private:
+	std::pair<long, long> beam_position; // row, column
+	std::vector<std::vector<bool>> splitters;
+
+	public:
+	Beam(std::pair<long, long> pos, std::vector<std::vector<bool>> split):
+		beam_position(pos), splitters(split) {}
+
+	long get_timelines() {
+		beam_position.first += 1;
+
+		if (table.find(beam_position) != table.end()) {
+			return table[beam_position];
+		}
+		if (beam_position.first == splitters.size()) {
+			table.insert({beam_position, 1L});
+			return 1;
+		}
+		if (splitters[beam_position.first][beam_position.second]) {
+			Beam beamL({beam_position.first, beam_position.second - 1}, splitters);
+			Beam beamR({beam_position.first, beam_position.second + 1}, splitters);
+			long result = beamL.get_timelines() + beamR.get_timelines();
+			table.insert({beam_position, result});
+			return result;
+		}
+		return get_timelines();
+	}
+};
+
 class Day7 {
 	private:
 	std::map<long, long> beam_positions; // column, row
@@ -64,6 +96,11 @@ class Day7 {
 		while (iterate()) {}
 		return total_splits;
 	}
+
+	long get_timelines() {
+		Beam beam({beam_positions.begin()->second, beam_positions.begin()->first}, splitters);
+		return beam.get_timelines();
+	}
 };
 
 int main() {
@@ -81,7 +118,7 @@ int main() {
         day7.add_row(line);
     }
 
-    std::cout << day7.get_splits() << "\n";
+    std::cout << day7.get_timelines() << "\n";
 
     file.close();
     return 0;
