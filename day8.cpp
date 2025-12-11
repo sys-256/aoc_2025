@@ -51,7 +51,6 @@ class Day8 {
 	private:
 	std::vector<std::vector<Box>> circuits;
 	std::map<std::pair<Box, Box>, double> distances;
-	boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS, Box> g;
 
 	double get_distance(Box box1, Box box2) {
 		std::int64_t *pos1 = box1.get_positions();
@@ -86,11 +85,6 @@ class Day8 {
 			auto box1 = (*minimum).first.first;
 			auto box2 = (*minimum).first.second;
 
-			auto v1 = boost::add_vertex(box1, g);
-			auto v2 = boost::add_vertex(box2, g);
-
-			boost::add_edge(v1, v2, g);
-
 			auto it_both = std::find_if(circuits.begin(), circuits.end(), [&box1, &box2](const std::vector<Box>& circuit) {
 				return std::count(circuit.begin(), circuit.end(), box1) > 0 &&
 					std::count(circuit.begin(), circuit.end(), box2) > 0;
@@ -122,26 +116,6 @@ class Day8 {
 	}
 
 	std::int64_t get_largest() {
-		// Vector to hold the component index for each vertex
-		std::vector<int> component(num_vertices(g));
-		int num_components = boost::connected_components(g, &component[0]);
-
-		// Vector to count sizes of each component
-		std::vector<int> sizes(num_components, 0);
-
-		for (const auto& comp : component) {
-			sizes[comp]++;
-		}
-
-		// Print sizes of connected components
-		std::cout << "Sizes of connected components: ";
-		for (const auto& size : sizes) {
-			std::cout << size << " ";
-		}
-
-		std::sort(sizes.begin(), sizes.end(), std::greater<>());
-		return sizes[0]*sizes[1]*sizes[2];
-
 		std::sort(circuits.begin(), circuits.end(), [](std::vector<Box>& a, std::vector<Box>& b) {
 			return a.size() > b.size();
 		});
@@ -227,7 +201,6 @@ int main() {
 	}
 
 	std::string line;
-	bool switched = false;
 	while (std::getline(file, line)) {
 		day8.add_row(line);
 	}
